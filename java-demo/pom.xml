@@ -11,9 +11,12 @@
 
     <artifactId>java-demo</artifactId>
     <packaging>pom</packaging>
+
+
     <modules>
         <module>java-spi</module>
         <module>java-streams</module>
+        <module>java-8-lambdas</module>
     </modules>
 
 
