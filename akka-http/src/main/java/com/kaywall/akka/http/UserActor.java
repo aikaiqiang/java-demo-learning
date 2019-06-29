@@ -17,6 +17,7 @@ public class UserActor extends AbstractActor {
         return receiveBuilder()
                 .match(UserMessages.CreateUserMessage.class, handleCreateUser())
                 .match(UserMessages.GetUserMessage.class, handleGetUser())
+                .match(UserMessages.UserListMessage.class, handleUserList())
                 .build();
     }
 
@@ -31,6 +32,12 @@ public class UserActor extends AbstractActor {
     private FI.UnitApply<UserMessages.GetUserMessage> handleGetUser() {
         return getUserMessageMessage -> {
             sender().tell(userService.getUser(getUserMessageMessage.getUserId()), getSelf());
+        };
+    }
+
+    private FI.UnitApply<UserMessages.UserListMessage> handleUserList() {
+        return getUserMessageMessage -> {
+            sender().tell(userService.getUsers(), getSelf());
         };
     }
 }

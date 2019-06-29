@@ -27,11 +27,11 @@ public class UserServerUnitTest extends JUnitRouteTest {
         appRoute.run(HttpRequest.GET("/users/42"))
                 .assertStatusCode(404);
 
-        appRoute.run(HttpRequest.DELETE("/users/1"))
-                .assertStatusCode(200);
+//        appRoute.run(HttpRequest.DELETE("/users/1"))
+//                .assertStatusCode(200);
 
-        appRoute.run(HttpRequest.DELETE("/users/42"))
-                .assertStatusCode(200);
+//        appRoute.run(HttpRequest.DELETE("/users/42"))
+//                .assertStatusCode(200);
 
         appRoute.run(HttpRequest.POST("/users")
                 .withEntity(HttpEntities.create(ContentTypes.APPLICATION_JSON, zaphod())))
@@ -44,7 +44,7 @@ public class UserServerUnitTest extends JUnitRouteTest {
     }
 
     private String zaphod() {
-        return "{\"id\":42,\"name\":\"Zaphod\"}";
+        return "{\"id\":66,\"name\":\"Kaywall\"}";
     }
 
 }

@@ -20,6 +20,9 @@ public interface UserMessages {
         }
     }
 
+    /**
+     * 创建用户消息类
+     */
     class CreateUserMessage implements Serializable {
 
         private static final long serialVersionUID = 1L;
@@ -34,6 +37,9 @@ public interface UserMessages {
         }
     }
 
+    /**
+     * 获取用户消息类
+     */
     class GetUserMessage implements Serializable {
         private static final long serialVersionUID = 1L;
         private final Long userId;
@@ -44,6 +50,18 @@ public interface UserMessages {
 
         public Long getUserId() {
             return userId;
+        }
+    }
+
+
+    /**
+     * 获取用户列表消息类
+     */
+    class UserListMessage implements Serializable {
+        private static final long serialVersionUID = 1L;
+
+        public UserListMessage() {
+
         }
     }
 }

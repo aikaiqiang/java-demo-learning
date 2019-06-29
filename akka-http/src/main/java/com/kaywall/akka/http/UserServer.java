@@ -10,11 +10,13 @@ import akka.pattern.PatternsCS;
 import akka.util.Timeout;
 import scala.concurrent.duration.Duration;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.TimeUnit;
 
-import static akka.http.javadsl.server.PathMatchers.*;
+import static akka.http.javadsl.server.PathMatchers.longSegment;
+import static akka.http.javadsl.server.PathMatchers.segment;
 
 
 class UserServer extends HttpApp {
@@ -29,7 +31,10 @@ class UserServer extends HttpApp {
 
         @Override
         public Route routes() {
-            return path("users", this::postUser)
+            return path("users", this::postUser) // 创建用户
+                    // 用户列表
+                    .orElse(path("userList", this::userList))
+                    // 单个用户
                     .orElse(path(segment("users").slash(longSegment()), id ->
                             route(getUser(id))));
         }
@@ -53,10 +58,22 @@ class UserServer extends HttpApp {
                 CompletionStage<UserMessages.ActionPerformed> userCreated = PatternsCS.ask(userActor, new UserMessages.CreateUserMessage(user), timeout)
                         .thenApply(obj -> (UserMessages.ActionPerformed) obj);
 
-                return onSuccess(() -> userCreated, performed -> {
-                    return complete(StatusCodes.CREATED, performed, Jackson.marshaller());
-                });
+                return onSuccess(() -> userCreated, performed -> complete(StatusCodes.CREATED, performed, Jackson.marshaller()));
             })));
+        }
+
+        private Route userList() {
+            return get(() -> {
+                CompletionStage<List<User>> user = PatternsCS.ask(userActor, new UserMessages.UserListMessage(), timeout)
+                        .thenApply(obj -> (List<User>) obj);
+
+                return onSuccess(() -> user, performed -> {
+                    if (!performed.isEmpty())
+                        return complete(StatusCodes.OK, performed, Jackson.marshaller());
+                    else
+                        return complete(StatusCodes.NO_CONTENT);
+                });
+            });
         }
 
         public static void main(String[] args) throws Exception {
