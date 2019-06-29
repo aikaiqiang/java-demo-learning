@@ -16,6 +16,9 @@
         <module>akka-streams</module>
         <module>akka-http</module>
         <module>akka-actor</module>
+        <module>apache-poi-demo</module>
+        <module>autovalue-demo</module>
+        <module>java-demo</module>
     </modules>
 
     <dependencies>
