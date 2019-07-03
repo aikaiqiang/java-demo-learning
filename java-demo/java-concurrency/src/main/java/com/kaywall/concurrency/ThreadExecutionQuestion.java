@@ -1,6 +1,4 @@
-package com.kaywall.thread;
-
-import java.util.concurrent.locks.LockSupport;
+package com.kaywall.concurrency;
 
 public class ThreadExecutionQuestion {
 

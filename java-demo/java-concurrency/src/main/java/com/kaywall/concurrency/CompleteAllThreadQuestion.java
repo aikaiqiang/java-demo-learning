@@ -1,4 +1,4 @@
-package com.kaywall.thread;
+package com.kaywall.concurrency;
 
 public class CompleteAllThreadQuestion {
 }
