@@ -1,5 +1,10 @@
-package com.kaywall.concurrency;
+package com.kaywall.concurrency.thread;
 
+/**
+ * @description  守候线程：主线程结束后，子守候线程是否执行完毕（视子线程执行时间）
+ * @author aikq
+ * @date 2019/7/3 9:19
+ */
 public class DaemonThreadQuestion {
 
     public static void main(String[] args) {

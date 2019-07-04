@@ -1,4 +1,4 @@
-package com.kaywall.concurrency;
+package com.kaywall.concurrency.thread;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;

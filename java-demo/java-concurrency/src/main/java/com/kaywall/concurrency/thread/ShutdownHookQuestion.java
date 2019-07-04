@@ -1,8 +1,8 @@
-package com.kaywall.concurrency;
+package com.kaywall.concurrency.thread;
 
 
 /**
- * 线程退出
+ * 线程退出 Hook 子线程做任务
  *@desc ShutdownHookQuestion
  *@author aikaiqiang
  *@date 2019-07-02 23:13
