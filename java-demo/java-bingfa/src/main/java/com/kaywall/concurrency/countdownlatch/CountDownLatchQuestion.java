@@ -25,13 +25,16 @@ public class CountDownLatchQuestion {
 //		CustomCountDownLatch2 countDownLatch = new CustomCountDownLatch2(5);
 
 		for (int i = 0; i < 5; i++) {
+			final int index = i;
 			threadPool.execute(() -> {
 				action();
-				try {
-					// 每个线程睡眠 10s
-					Thread.sleep(10 * 1000);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
+				if(index == 3){
+					try {
+						// 每个线程睡眠 10s
+						Thread.sleep(10 * 1000);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
 				}
 
 				countDownLatch.countDown();
@@ -52,11 +55,11 @@ public class CountDownLatchQuestion {
 	private static class CustomCountDownLatch{
 		private volatile int count;
 
-		public CustomCountDownLatch(int count) {
+		private CustomCountDownLatch(int count) {
 			this.count = count;
 		}
 
-		public void countDown() {
+		private void countDown() {
 			synchronized (this) {
 				printLockObject(this);
 				if(count < 1){
@@ -74,7 +77,7 @@ public class CountDownLatchQuestion {
 		}
 
 
-		public void await() throws InterruptedException {
+		private void await() throws InterruptedException {
 			// 判断阻塞状态并清除
 			if(Thread.interrupted()){
 				throw  new InterruptedException();
@@ -102,11 +105,11 @@ public class CountDownLatchQuestion {
 		private Condition condition = lock.newCondition();
 		private volatile int count;
 
-		public CustomCountDownLatch2(int count) {
+		private CustomCountDownLatch2(int count) {
 			this.count = count;
 		}
 
-		public void countDown() {
+		private void countDown() {
 			lock.lock();
 			try {
 				if(count < 1){
@@ -123,7 +126,7 @@ public class CountDownLatchQuestion {
 			}
 		}
 
-		public void await() throws InterruptedException {
+		private void await() throws InterruptedException {
 			// 判断阻塞状态并清除
 			if(Thread.interrupted()){
 				throw  new InterruptedException();
