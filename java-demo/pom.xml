@@ -17,7 +17,7 @@
         <module>java-spi</module>
         <module>java-streams</module>
         <module>java-8-lambdas</module>
-        <module>java-concurrency</module>
+        <module>java-test</module>
     </modules>
 
 
