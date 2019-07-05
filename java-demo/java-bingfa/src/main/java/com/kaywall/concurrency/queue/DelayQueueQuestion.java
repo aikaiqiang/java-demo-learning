@@ -26,7 +26,7 @@ public class DelayQueueQuestion {
 //		queue.put(element1);
 //		Delayed element2 = queue.take();
 
-		// 测试延时消息
+		// 延时消息队列
 		DelayQueue<DelayMessage> messageDelayQueue = new DelayQueue<DelayMessage>();
 		ExecutorService exec = Executors.newFixedThreadPool(2);
 		// 启动生产者
@@ -98,13 +98,15 @@ public class DelayQueueQuestion {
 	 */
 	static class DelayMessage implements Delayed {
 		private Integer id;
-		private String coment;
-		// 延迟时长
+		private String comment;
+		/**
+		 * 延迟时长
+		 */
 		private volatile long time;
 
-		public DelayMessage(Integer id, String coment, long time) {
+		public DelayMessage(Integer id, String comment, long time) {
 			this.id = id;
-			this.coment = coment;
+			this.comment = comment;
 			// 当前时间 + 延时时间
 			this.time = TimeUnit.NANOSECONDS.convert(time, TimeUnit.MILLISECONDS) + System.nanoTime();;
 		}
@@ -114,7 +116,7 @@ public class DelayQueueQuestion {
 		}
 
 		public String getComent() {
-			return coment;
+			return comment;
 		}
 
 		public long getTime() {
@@ -164,9 +166,9 @@ public class DelayQueueQuestion {
 		public void run() {
 			while (true) {
 				try {
-					DelayMessage take = queue.take();
+					DelayMessage takeMessage = queue.take();
 					System.out.printf("--- 消费时间：%s，消费消息id：%s, 消息体：%s \n",
-							DateFormatUtils.format(new Date(), "yyyy-MM-dd HH:mm:ss"), take.getId(), take.getComent());
+							DateFormatUtils.format(new Date(), "yyyy-MM-dd HH:mm:ss"), takeMessage.getId(), takeMessage.getComent());
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
@@ -174,9 +176,13 @@ public class DelayQueueQuestion {
 		}
 	}
 
-
+	/**
+	 * 生产者
+	 */
 	static class Producer implements Runnable {
-
+		/**
+		 * 延时队列
+		 */
 		private DelayQueue<DelayMessage> queue;
 
 		public Producer(DelayQueue<DelayMessage> queue) {

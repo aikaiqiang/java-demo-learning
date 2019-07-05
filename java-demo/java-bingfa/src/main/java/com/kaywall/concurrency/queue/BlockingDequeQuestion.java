@@ -3,8 +3,8 @@ package com.kaywall.concurrency.queue;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.LinkedBlockingDeque;
 
-import static com.kaywall.concurrency.queue.Utils.partingLine;
-import static com.kaywall.concurrency.queue.Utils.printQueue;
+import static com.kaywall.concurrency.Utils.partingLine;
+import static com.kaywall.concurrency.Utils.printQueue;
 
 /**
  *  阻塞双端队列： Double Ended Queue

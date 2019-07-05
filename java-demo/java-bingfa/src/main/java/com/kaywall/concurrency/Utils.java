@@ -1,4 +1,4 @@
-package com.kaywall.concurrency.queue;
+package com.kaywall.concurrency;
 
 import java.util.concurrent.BlockingQueue;
 
