@@ -1,0 +1,89 @@
+version: '2'
+services:
+  magic-elasticsearch:
+    image: elasticsearch:latest
+    container_name: magic-elasticsearch
+    hostname: magic-elasticsearch
+    environment:
+      - cluster.name=docker-cluster
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - /home/es/1:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+  magic-elasticsearch2:
+    image: elasticsearch:latest
+    container_name: magic-elasticsearch2
+    hostname: magic-elasticsearch2
+    links:
+      - "magic-elasticsearch"
+    environment:
+      - cluster.name=docker-cluster
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - "discovery.zen.ping.unicast.hosts=magic-elasticsearch"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - /home/es/2:/usr/share/elasticsearch/data
+  magic-elasticsearch3:
+    image: elasticsearch:latest
+    container_name: magic-elasticsearch3
+    hostname: magic-elasticsearch3
+    links:
+      - "magic-elasticsearch"
+    environment:
+      - cluster.name=docker-cluster
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - "discovery.zen.ping.unicast.hosts=magic-elasticsearch"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - /home/es/3:/usr/share/elasticsearch/data
+  magic-logstash:
+    image: logstash:latest
+    container_name: magic-logstash
+    hostname: magic-logstash
+    links:
+      - "magic-elasticsearch"
+    volumes:
+      - /home/logstash/pipeline/:/usr/share/logstash/pipeline/
+      #- /home/logstash/config/:/usr/share/logstash/config/
+    ports:
+      - "5044:5044"
+    depends_on:
+      - magic-elasticsearch
+    command: logstash -f /usr/share/logstash/pipeline/logstash.conf --config.reload.automatic
+  magic-kibana:
+    image: kibana:latest
+    container_name: magic-kibana
+    hostname: magic-kibana
+    environment:
+      - "ELASTICSEARCH_URL=http://magic-elasticsearch:9200"
+    links:
+      - "magic-elasticsearch"
+    depends_on:
+      - magic-elasticsearch
+    ports:
+      - "5601:5601"
+  magic-filebeat:
+    image: docker.elastic.co/beats/filebeat:6.5.4
+    container_name: magic-filebeat
+    hostname: magic-filebeat
+    links:
+      - "magic-logstash"
+    depends_on:
+      - magic-kibana
+    volumes:
+    - /home/filebeat/config/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+    - /home/magic/logs:/var/log/magic

@@ -1,0 +1,67 @@
+version: '2'
+services:
+  apollo-configservice:
+    image: 192.168.0.24:1180/magic/magic-apollo:latest
+    hostname: apollo-configservice
+    container_name: apollo-configservice
+    environment:
+      - HCLOUD_EUREKA_DEFAULTZONE=http://apollo-configservice:8080/eureka/
+      - spring_datasource_url=jdbc:mysql://192.168.0.14:3306/ApolloConfigDB_1_3_0?characterEncoding=utf8
+      - spring_datasource_username=root
+      - spring_datasource_password=Cobbler1234!
+      - logging.file=/opt/logs/configservice.log
+      - server.port=8080
+    volumes:
+      - /home/magic/apollo-configservice:/opt/logs
+    ports:
+      - "8080:8080"
+    command:
+      - configservice.jar
+    restart: always
+
+  apollo-adminservice:
+    image: 192.168.0.24:1180/magic/magic-apollo:latest
+    hostname: apollo-adminservice
+    container_name: apollo-adminservice
+    environment:
+      - HCLOUD_EUREKA_DEFAULTZONE=http://apollo-configservice:8080/eureka/
+      - spring_datasource_url=jdbc:mysql://192.168.0.14:3306/ApolloConfigDB_1_3_0?characterEncoding=utf8
+      - spring_datasource_username=root
+      - spring_datasource_password=Cobbler1234!
+      - logging.file=/opt/logs/adminservice.log
+      - server.port=8090
+    volumes:
+      - /home/magic/apollo-adminservice:/opt/logs
+    links:
+      - "apollo-configservice"
+    ports:
+      - "8090:8090"
+    depends_on:
+      - apollo-configservice
+    command:
+      - adminservice.jar
+    restart: always
+
+  apollo-portal:
+    image: 192.168.0.24:1180/magic/magic-apollo:latest
+    hostname: apollo-portal
+    container_name: apollo-portal
+    environment:
+      - spring_datasource_url=jdbc:mysql://192.168.0.14:3306/ApolloPortalDB_1_3_0?characterEncoding=utf8
+      - spring_datasource_username=root
+      - spring_datasource_password=Cobbler1234!
+      - server.port=8070
+      - logging.file=/opt/logs/portal.log
+    volumes:
+      - /home/magic/apollo-portal:/opt/logs
+    links:
+      - "apollo-adminservice"
+      - "apollo-configservice"
+    ports:
+      - "8070:8070"
+    command:
+      - -Ddev_meta=http://apollo-configservice:8080
+      - portal.jar
+    depends_on:
+      - apollo-adminservice
+    restart: always

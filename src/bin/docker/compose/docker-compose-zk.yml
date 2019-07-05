@@ -1,0 +1,38 @@
+version: '2'
+services:
+  # zookeeper
+  zookeeper:
+    image: zookeeper
+    restart: always
+    hostname: zookeeper
+    ports:
+      - 2181:2181
+    volumes:
+      - /home/magic/zookeeper/1/data:/data
+    environment:
+      ZOO_MY_ID: 1
+      ZOO_SERVERS: server.1=0.0.0.0:2888:3888 server.2=zookeeper2:2888:3888 server.3=zookeeper3:2888:3888
+  # zookeeper
+  zookeeper2:
+    image: zookeeper
+    restart: always
+    hostname: zookeeper2
+    ports:
+      - 2182:2181
+    volumes:
+      - /home/magic/zookeeper/2/data:/data
+    environment:
+      ZOO_MY_ID: 2
+      ZOO_SERVERS: server.1=zookeeper2:2888:3888 server.2=0.0.0.0:2888:3888 server.3=zookeeper3:2888:3888
+  # zookeeper
+  zookeeper3:
+    image: zookeeper
+    restart: always
+    hostname: zookeeper3
+    ports:
+      - 2183:2181
+    volumes:
+      - /home/magic/zookeeper/3/data:/data
+    environment:
+      ZOO_MY_ID: 3
+      ZOO_SERVERS: server.1=zookeeper2:2888:3888 server.2=zookeeper3:2888:3888 server.3=0.0.0.0:2888:3888

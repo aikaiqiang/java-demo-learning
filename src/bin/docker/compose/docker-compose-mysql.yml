@@ -1,0 +1,37 @@
+# 表示该docker-compose.yml文件使用的是Version 3 file format
+version: '3.7'
+services:
+  # 数据库服务
+  magic-mysql:
+    image: mysql:5.7
+    deploy:
+      # 可以被外界客户端连接 vip ,dnsrr 内部网络之间连接
+      #endpoint_mode: vip
+      resources:
+        limits:
+          cpus: '0.1'
+          memory: 150M
+        reservations:
+          cpus: '0.05'
+          memory: 80M
+    hostname: magic-mysql
+    container_name: magic-mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_USER=hancloud
+      - MYSQL_PASSWORD=hancloud1234!
+    ports:
+      - "3306:3306"
+    #networks:
+      #- magic_network
+      #- default
+    restart: always
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /usr/share/zoneinfo/Asia/Shanghai:/etc/timezone:ro
+      - /home/magic/mysql/data:/var/lib/mysql
+      - /home/magic/mysql/logs:/var/log/mysql
+
+#networks:
+  #magic_network:
+    #external: true

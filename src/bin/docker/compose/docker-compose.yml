@@ -1,0 +1,552 @@
+version: '2'
+services:
+  magic-redis:
+        image: redis:4.0.12
+        hostname: magic-redis
+        container_name: magic-redis
+        ports:
+          - "6379:6379"
+        restart: always
+        volumes:
+          - /home/magic/redis/conf/redis.conf:/usr/local/etc/redis/redis.conf
+          - /etc/timezone:/etc/timezone:ro
+          - /etc/localtime:/etc/localtime:ro
+
+  magic-mysql:
+      image: mysql:5.7
+      hostname: magic-mysql
+      container_name: magic-mysql
+      environment:
+        - MYSQL_ROOT_PASSWORD=root
+        - MYSQL_USER=hancloud
+        - MYSQL_PASSWORD=hancloud1234!
+      ports:
+        - "3306:3306"
+      restart: always
+      volumes:
+        - /etc/localtime:/etc/localtime:ro
+        - /usr/share/zoneinfo/Asia/Shanghai:/etc/timezone:ro
+        - /home/magic/mysql/data:/var/lib/mysql
+        - /home/magic/mysql/logs:/var/log/mysql
+        - /etc/timezone:/etc/timezone:ro
+        - /etc/localtime:/etc/localtime:ro
+
+  apollo-configservice:
+    image: 192.168.0.24:1180/magic/magic-apollo:latest
+    hostname: apollo-configservice
+    container_name: apollo-configservice
+    environment:
+      - HCLOUD_EUREKA_DEFAULTZONE=http://apollo-configservice:8080/eureka/
+      - spring_datasource_url=jdbc:mysql://magic-mysql:3306/ApolloConfigDB?characterEncoding=utf8
+      - spring_datasource_username=root
+      - spring_datasource_password=root
+      - logging.file=/opt/logs/configservice.log
+      - server.port=8080
+    volumes:
+      - /home/magic/apollo-configservice:/opt/logs
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - "8080:8080"
+    command:
+      - configservice.jar
+    restart: always
+
+  apollo-adminservice:
+    image: 192.168.0.24:1180/magic/magic-apollo:latest
+    hostname: apollo-adminservice
+    container_name: apollo-adminservice
+    environment:
+      - HCLOUD_EUREKA_DEFAULTZONE=http://apollo-configservice:8080/eureka/
+      - spring_datasource_url=jdbc:mysql://magic-mysql:3306/ApolloConfigDB?characterEncoding=utf8
+      - spring_datasource_username=root
+      - spring_datasource_password=root
+      - logging.file=/opt/logs/adminservice.log
+      - server.port=8090
+    volumes:
+      - /home/magic/apollo-adminservice:/opt/logs
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    links:
+      - "apollo-configservice"
+    ports:
+      - "8090:8090"
+    depends_on:
+      - apollo-configservice
+    command:
+      - adminservice.jar
+    restart: always
+
+  apollo-portal:
+    image: 192.168.0.24:1180/magic/magic-apollo:latest
+    hostname: apollo-portal
+    container_name: apollo-portal
+    environment:
+      - spring_datasource_url=jdbc:mysql://magic-mysql:3306/ApolloPortalDB?characterEncoding=utf8
+      - spring_datasource_username=root
+      - spring_datasource_password=root
+      - server.port=8070
+      - logging.file=/opt/logs/portal.log
+    volumes:
+      - /home/magic/apollo-portal:/opt/logs
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    links:
+      - "apollo-adminservice"
+      - "apollo-configservice"
+    ports:
+      - "8070:8070"
+    command:
+      - -Ddev_meta=http://apollo-configservice:8080
+      - portal.jar
+    depends_on:
+      - apollo-adminservice
+    restart: always
+
+  magic-eureka-center:
+    image: 192.168.0.24:1180/magic/magic-eureka-center:0.0.7.rc.alpha
+    hostname: magic-eureka-center
+    container_name: magic-eureka-center
+    environment:
+      - APOLLO_META=http://apollo-configservice:8080
+    volumes:
+      - /home/magic/tomcat/eureka:/data/magic/tomcat/eureka
+      - /home/magic/logs/eureka:/data/magic/logs/eureka
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    links:
+      - "apollo-configservice"
+    ports:
+      - "8761:8761"
+    depends_on:
+      - apollo-portal
+    restart: always
+
+
+  # 用户权限管理
+  magic-upms-center:
+    image: 192.168.0.24:1180/magic/magic-upms-center:0.0.7.rc.alpha
+    container_name: magic-upms-center
+    hostname: magic-upms-center
+    environment:
+      # Apollo配置中心地址
+      - APOLLO_META=http://apollo-configservice:8080
+    depends_on:
+      - magic-eureka-center
+    links:
+      - "apollo-configservice"
+    ports:
+      - "8082:8082"
+    restart: always
+    volumes:
+      - /home/magic/tomcat/upms:/data/magic/tomcat/upms
+      - /home/magic/upms/multipart:/data/magic/upms/multipart
+      - /home/magic/logs/upms:/data/magic/logs/upms
+      - /home/magic/upms/user:/data/magic/upms/user
+      - /home/magic/upms/department:/data/magic/upms/department
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+
+  # 授权认证中心
+  magic-authorize-server:
+    image: 192.168.0.24:1180/magic/magic-authorize-server:0.0.7.rc.alpha
+    container_name: magic-oauth-center
+    hostname: magic-authorize-server
+    environment:
+      # Apollo配置中心地址
+      - APOLLO_META=http://apollo-configservice:8080
+    depends_on:
+      - magic-upms-center
+    ports:
+      - "8081:8081"
+    links:
+      - "apollo-configservice"
+    restart: always
+    volumes:
+      - /home/magic/logs/oauth:/data/magic/logs/oauth
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+
+  # 鉴权认证中心
+  magic-resource-server:
+    image: 192.168.0.24:1180/magic/magic-resource-server:0.0.7.rc.alpha
+    container_name: magic-resource-server
+    hostname: magic-resource-server
+    environment:
+      # Apollo配置中心地址
+      - APOLLO_META=http://apollo-configservice:8080
+    depends_on:
+      - magic-authorize-server
+    ports:
+      - "8097:8097"
+    links:
+      - "apollo-configservice"
+    restart: always
+    volumes:
+      - /home/magic/logs/resource:/data/magic/logs/resource
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+
+  # 元数据管理服务
+  magic-metadata-center:
+    image: 192.168.0.24:1180/magic/magic-metadata-center:0.0.7.rc.alpha
+    container_name: magic-metadata-center
+    hostname: magic-metadata-center
+    environment:
+      # Apollo配置中心地址
+      - APOLLO_META=http://apollo-configservice:8080
+    depends_on:
+      - magic-resource-server
+    links:
+      - "apollo-configservice"
+    ports:
+      - "8083:8083"
+    restart: always
+    volumes:
+      - /home/magic/tomcat/metadata:/data/magic/tomcat/metadata
+      - /home/magic/logs/metadata:/data/magic/logs/metadata
+      - /home/magic/metadata/image/upload:/data/magic/metadata/image/upload
+      - /home/magic/metadata/image/temp:/data/magic/metadata/image/temp
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+
+  # 日志服务
+  magic-logger-center:
+    image: 192.168.0.24:1180/magic/magic-logger-center:0.0.7.rc.alpha
+    container_name: magic-logger-center
+    hostname: magic-logger-center
+    environment:
+      # Apollo配置中心地址
+      - APOLLO_META=http://apollo-configservice:8080
+    depends_on:
+      - magic-metadata-center
+    ports:
+      - "8085:8085"
+    links:
+      - "apollo-configservice"
+    restart: always
+    volumes:
+      - /home/magic/tomcat/logger:/data/magic/tomcat/logger
+      - /home/magic/logs/logger:/data/magic/logs/logger
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+
+  # 公共服务服务
+  magic-foundation-center:
+    image: 192.168.0.24:1180/magic/magic-foundation-center:0.0.7.rc.alpha
+    container_name: magic-foundation-center
+    hostname: magic-foundation-center
+    environment:
+      # Apollo配置中心地址
+      - APOLLO_META=http://apollo-configservice:8080
+    depends_on:
+      - magic-logger-center
+    ports:
+      - "8084:8084"
+    links:
+      - "apollo-configservice"
+    restart: always
+    privileged: true
+    volumes:
+      - /home/magic/tomcat/foundation:/data/magic/tomcat/foundation
+      - /home/magic/foundation/multipart:/data/magic/foundation/multipart
+      - /home/magic/logs/foundation:/data/magic/logs/foundation
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+
+  # 导入导出服务
+  magic-imexport-center:
+    image: 192.168.0.24:1180/magic/magic-imexport-center:0.0.7.rc.alpha
+    container_name: magic-imexport-center
+    hostname: magic-imexport-center
+    environment:
+      # Apollo配置中心地址
+      - APOLLO_META=http://apollo-configservice:8080
+    depends_on:
+      - magic-foundation-center
+    ports:
+      - "8087:8087"
+    links:
+      - "apollo-configservice"
+    restart: always
+    volumes:
+      - /home/magic/tomcat/imexport:/data/magic/tomcat/imexport
+      - /home/magic/logs/imexport:/data/magic/logs/imexport
+      - /home/magic/imexport/import:/data/magic/imexport/import
+      - /home/magic/imexport/export:/data/magic/imexport/export
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+
+  # 任务调度中心服务
+  magic-job-admin:
+    image: 192.168.0.24:1180/magic/magic-job-admin:0.0.7.rc.alpha
+    container_name: magic-job-admin
+    hostname: magic-job-admin
+    environment:
+      # Apollo配置中心地址
+      - APOLLO_META=http://apollo-configservice:8080
+    depends_on:
+      - magic-imexport-center
+    ports:
+      - "8088:8088"
+    links:
+      - "apollo-configservice"
+    restart: always
+    volumes:
+      - /home/magic/tomcat/job_admin:/data/magic/tomcat/job_admin
+      - /home/magic/logs/job_admin:/data/magic/logs/job_admin
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+
+  # 任务调度执行器服务
+  magic-job-center:
+    image: 192.168.0.24:1180/magic/magic-job-center:0.0.7.rc.alpha
+    container_name: magic-job-center
+    hostname: magic-job-center
+    environment:
+      # Apollo配置中心地址
+      - APOLLO_META=http://apollo-configservice:8080
+    depends_on:
+      - magic-job-admin
+    ports:
+      - "8089:8089"
+    links:
+      - "apollo-configservice"
+      - "magic-job-admin"
+    restart: always
+    volumes:
+      - /home/magic/tomcat/job_center:/data/magic/tomcat/job_center
+      - /home/magic/logs/job_center/sys:/data/magic/logs/job_center/sys
+      - /home/magic/logs/job_center/jobhandler:/data/magic/logs/job_center/jobhandler
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+
+  # 联盟服务
+  magic-alliance-center:
+    image: 192.168.0.24:1180/magic/magic-alliance-center:0.0.7.rc.alpha
+    container_name: magic-alliance-center
+    hostname: magic-alliance-center
+    environment:
+      # Apollo配置中心地址
+      - APOLLO_META=http://apollo-configservice:8080
+    depends_on:
+      - magic-job-center
+    ports:
+      - "8086:8086"
+    links:
+      - "apollo-configservice"
+    restart: always
+    volumes:
+      - /home/magic/tomcat/alliance:/data/magic/tomcat/alliance
+      - /home/magic/logs/alliance:/data/magic/logs/alliance
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+
+  # 消息服务中心
+  magic-message-center:
+    image: 192.168.0.24:1180/magic/magic-message-center:0.0.7.rc.alpha
+    container_name: magic-message-center
+    hostname: magic-message-center
+    environment:
+      # Apollo配置中心地址
+      - APOLLO_META=http://apollo-configservice:8080
+    depends_on:
+      - magic-job-center
+    ports:
+      - "8098:8098"
+    links:
+      - "apollo-configservice"
+    restart: always
+    volumes:
+      - /home/magic/tomcat/oauth:/data/magic/tomcat/oauth
+      - /home/magic/logs/oauth:/data/magic/logs/oauth
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+
+  # 网关服务
+  magic-gateway-center:
+    image: 192.168.0.24:1180/magic/magic-gateway-center:0.0.7.rc.alpha
+    container_name: magic-gateway-center
+    hostname: magic-gateway-center
+    environment:
+      # Apollo配置中心地址
+      - APOLLO_META=http://apollo-configservice:8080
+    depends_on:
+      - magic-alliance-center
+    ports:
+      - "9000:9000"
+    links:
+      - "apollo-configservice"
+    restart: always
+    volumes:
+      - /home/magic/tomcat/gateway:/data/magic/tomcat/gateway
+      - /home/magic/gateway/multipart:/data/magic/gateway/multipart
+      - /home/magic/logs/gateway:/data/magic/logs/gateway
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+
+  #前端服务
+  magic-web:
+    image: 192.168.0.24:1180/magic/magic-web:0.0.7.rc.alpha
+    container_name: magic-web
+    hostname: magic-web
+    volumes:
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    depends_on:
+      - magic-gateway-center
+      -
+    ports:
+      - "9085:9085"
+    restart: always
+  # es
+  magic-elasticsearch:
+    image: elasticsearch:latest
+    container_name: magic-elasticsearch
+    hostname: magic-elasticsearch
+    environment:
+      - cluster.name=docker-cluster
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - /home/es/1:/usr/share/elasticsearch/data
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - "9200:9200"
+  # es
+  magic-elasticsearch2:
+    image: elasticsearch:latest
+    container_name: magic-elasticsearch2
+    hostname: magic-elasticsearch2
+    links:
+      - "magic-elasticsearch"
+    environment:
+      - cluster.name=docker-cluster
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - "discovery.zen.ping.unicast.hosts=magic-elasticsearch"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - /home/es/2:/usr/share/elasticsearch/data
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+  # es
+  magic-elasticsearch3:
+    image: elasticsearch:latest
+    container_name: magic-elasticsearch3
+    hostname: magic-elasticsearch3
+    links:
+      - "magic-elasticsearch"
+    environment:
+      - cluster.name=docker-cluster
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - "discovery.zen.ping.unicast.hosts=magic-elasticsearch"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - /home/es/3:/usr/share/elasticsearch/data
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+  # logstash
+  magic-logstash:
+    image: logstash:latest
+    container_name: magic-logstash
+    hostname: magic-logstash
+    links:
+      - "magic-elasticsearch"
+    volumes:
+      - /home/logstash/pipeline/:/usr/share/logstash/pipeline/
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+      #- /home/logstash/config/:/usr/share/logstash/config/
+    ports:
+      - "5044:5044"
+    depends_on:
+      - magic-elasticsearch
+    command: logstash -f /usr/share/logstash/pipeline/logstash.conf --config.reload.automatic
+  # kibana
+  magic-kibana:
+    image: kibana:latest
+    container_name: magic-kibana
+    hostname: magic-kibana
+    environment:
+      - "ELASTICSEARCH_URL=http://magic-elasticsearch:9200"
+    volumes:
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    links:
+      - "magic-elasticsearch"
+    depends_on:
+      - magic-elasticsearch
+    ports:
+      - "5601:5601"
+  # filebeat
+  magic-filebeat:
+    image: docker.elastic.co/beats/filebeat:6.5.4
+    container_name: magic-filebeat
+    hostname: magic-filebeat
+    links:
+      - "magic-logstash"
+    depends_on:
+      - magic-kibana
+    volumes:
+    - /home/filebeat/config/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+    - /home/magic/logs:/var/log/magic
+    - /etc/timezone:/etc/timezone:ro
+    - /etc/localtime:/etc/localtime:ro
+
+  # zookeeper
+  zookeeper:
+    image: zookeeper
+    restart: always
+    hostname: zookeeper
+    ports:
+      - 2181:2181
+    volumes:
+      - /home/magic/zookeeper/1/data:/data
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      ZOO_MY_ID: 1
+      ZOO_SERVERS: server.1=0.0.0.0:2888:3888 server.2=zookeeper2:2888:3888 server.3=zookeeper3:2888:3888
+
+  # zookeeper
+  zookeeper2:
+    image: zookeeper
+    restart: always
+    hostname: zookeeper2
+    ports:
+      - 2182:2181
+    volumes:
+      - /home/magic/zookeeper/2/data:/data
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      ZOO_MY_ID: 2
+      ZOO_SERVERS: server.1=zookeeper2:2888:3888 server.2=0.0.0.0:2888:3888 server.3=zookeeper3:2888:3888
+
+  # zookeeper
+  zookeeper3:
+    image: zookeeper
+    restart: always
+    hostname: zookeeper3
+    ports:
+      - 2183:2181
+    volumes:
+      - /home/magic/zookeeper/3/data:/data
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      ZOO_MY_ID: 3
+      ZOO_SERVERS: server.1=zookeeper2:2888:3888 server.2=zookeeper3:2888:3888 server.3=0.0.0.0:2888:3888
