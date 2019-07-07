@@ -19,6 +19,7 @@
         <module>apache-poi-demo</module>
         <module>autovalue-demo</module>
         <module>java-demo</module>
+        <module>pattern</module>
     </modules>
 
     <dependencies>
