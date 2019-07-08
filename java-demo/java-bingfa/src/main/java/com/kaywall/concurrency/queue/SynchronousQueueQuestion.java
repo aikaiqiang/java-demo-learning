@@ -18,7 +18,7 @@ public class SynchronousQueueQuestion {
 	 *  参考原理：https://blog.csdn.net/yanyan19880509/article/details/52562039
 	 * SynchronousQueue直接使用CAS实现线程的安全访问， 不依赖AQS实现并发操作：
 	 * 公平模式（TransferQueue）：队尾匹配队头出队，先进先出，体现公平原则
-	 * 非公平模式（TransferStack）：
+	 * 非公平模式（TransferStack）：随机出队一个, 默认为非公平模式;
 	 *
 	 */
 
