@@ -1,4 +1,4 @@
-package com.kaywall.concurrency.automic;
+package com.kaywall.concurrency.atomic;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -7,7 +7,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @author aikaiqiang
  * @date 2019年07月08日 14:47
  */
-public class AutomicQuestion {
+public class AtomicQuestion {
 
 	/**
 	 * Automic** 使用 Jvm CAS 原子性操作修改内存内容, 通过 Unsafe 类编辑
