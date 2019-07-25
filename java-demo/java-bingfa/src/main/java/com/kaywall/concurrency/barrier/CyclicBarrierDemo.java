@@ -11,13 +11,14 @@ import java.util.concurrent.*;
  */
 public class CyclicBarrierDemo {
 
+	private static final int count = 50;
 
 	public static void main(String[] args) throws InterruptedException {
 		ExecutorService threadPool = Executors.newFixedThreadPool(5);
 		CyclicBarrier barrier = new CyclicBarrier(5);
 
 		// 启动线程总数 m 为 CyclicBarrier 初始化个数 * n 倍
-		for (int i = 0; i < 15; i++) {
+		for (int i = 0; i < count; i++) {
 			threadPool.submit(() -> {
 				action();
 				try {

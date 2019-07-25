@@ -12,6 +12,7 @@ import java.util.concurrent.Executors;
  */
 public class CyclicBarrierDemoTwo {
 
+	private static final int count = 50;
 
 	public static void main(String[] args) throws InterruptedException {
 		ExecutorService threadPool = Executors.newFixedThreadPool(5);
@@ -29,17 +30,19 @@ public class CyclicBarrierDemoTwo {
 		});
 
 
-		for (int i = 0; i < 10; i++) {
+		for (int i = 0; i < count; i++) {
 			threadPool.submit(() -> {
 				action();
 				try {
 					// 模拟耗时
-					for(int j = 0; j < 20000; j++);
+					for(int j = 0; j < 10000; j++);
 					// 执行完毕，通知障碍器
 					barrier.await();
 
 				} catch (InterruptedException e) {
 					e.printStackTrace();
+					// 中断线程, 并清除中断状态
+					Thread.currentThread().interrupt();
 				} catch (BrokenBarrierException e) {
 					e.printStackTrace();
 				}

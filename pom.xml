@@ -20,6 +20,7 @@
         <module>autovalue-demo</module>
         <module>java-demo</module>
         <module>pattern</module>
+        <module>spring-event-demo</module>
     </modules>
 
     <dependencies>
