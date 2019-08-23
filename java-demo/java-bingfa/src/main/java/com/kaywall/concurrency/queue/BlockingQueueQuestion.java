@@ -17,10 +17,10 @@ public class BlockingQueueQuestion {
 	public static void main(String[] args) throws InterruptedException {
 
 		// ArrayBlockingQueue
-		arrayBlockingQueueTest();
+//		arrayBlockingQueueTest();
 
 		// LinkedBlockingQueueTest
-		linkedBlockingQueueTest();
+//		linkedBlockingQueueTest();
 
 		// PriorityBlockingQueue
 		priorityBlockingQueueTest();
