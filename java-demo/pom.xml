@@ -20,6 +20,7 @@
         <module>java-test</module>
         <module>java-bingfa</module>
         <module>java-rpc</module>
+        <module>core-java-collections</module>
     </modules>
 
 
