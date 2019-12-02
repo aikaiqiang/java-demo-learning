@@ -21,6 +21,7 @@
         <module>java-bingfa</module>
         <module>java-rpc</module>
         <module>core-java-collections</module>
+        <module>java-custom-loadclass</module>
     </modules>
 
 
