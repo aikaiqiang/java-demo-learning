@@ -26,7 +26,7 @@ public class CustomTcpClient {
 						.doOnDisconnected(conn -> System.out.println("断开链接之后的操作"))
 						.host("localhost")
 						.port(8080)
-						.handle((inbound, outbound) -> outbound.sendString(Mono.just("hello world from client")))
+						.handle((inbound, outbound) -> outbound.sendString(Mono.just("hello")))
 						.handle((inbound, outbound) -> inbound.receive().then())
 						.wiretap(true)
 						.connectNow();

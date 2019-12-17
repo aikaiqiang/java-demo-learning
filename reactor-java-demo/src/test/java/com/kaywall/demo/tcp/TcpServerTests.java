@@ -197,4 +197,29 @@ public class TcpServerTests {
 		client.disposeNow();
 		server.disposeNow();
 	}
+
+	public static class Pojo {
+
+		private String name;
+
+		private Pojo() {
+		}
+
+		private Pojo(String name) {
+			this.name = name;
+		}
+
+		public String getName() {
+			return name;
+		}
+
+		public void setName(String name) {
+			this.name = name;
+		}
+
+		@Override
+		public String toString() {
+			return "Pojo{" + "name='" + name + '\'' + '}';
+		}
+	}
 }
