@@ -23,7 +23,51 @@
         <module>spring-security-demo</module>
         <module>spring-event-demo</module>
         <module>reactor-java-demo</module>
+        <module>apache-camel-demo</module>
     </modules>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <junit.version>4.12</junit.version>
+        <org.hamcrest.version>1.3</org.hamcrest.version>
+
+        <!-- logging -->
+        <org.slf4j.version>1.7.21</org.slf4j.version>
+        <logback.version>1.1.7</logback.version>
+
+
+        <!-- plugins -->
+        <maven-compiler-plugin.version>3.7.0</maven-compiler-plugin.version>
+        <exec-maven-plugin.version>1.6.0</exec-maven-plugin.version>
+        <java.version>1.8</java.version>
+        <log4j.version>1.2.17</log4j.version>
+
+        <lombok.version>1.16.12</lombok.version>
+
+        <junit-platform.version>1.2.0</junit-platform.version>
+        <junit-jupiter.version>5.2.0</junit-jupiter.version>
+
+        <camel.osgi.symbolic.name>${project.artifactId}</camel.osgi.symbolic.name>
+        <skip.starting.camel.context>false</skip.starting.camel.context>
+        <javax.servlet.api.version>4.0.1</javax.servlet.api.version>
+        <camel.osgi.export.pkg />
+
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <!--
+              CAMEL-13084 Fix the spring-boot examples start up error by overriding servlet API version from camel-parent
+              Wqe need to clean it up once camel-parent upgrade the servlet api version.
+            -->
+            <dependency>
+                <groupId>javax.servlet</groupId>
+                <artifactId>javax.servlet-api</artifactId>
+                <version>${javax.servlet.api.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <dependencies>
         <!-- logging -->
@@ -84,30 +128,5 @@
             </plugin>
         </plugins>
     </build>
-
-
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-
-        <junit.version>4.12</junit.version>
-        <org.hamcrest.version>1.3</org.hamcrest.version>
-
-        <!-- logging -->
-        <org.slf4j.version>1.7.21</org.slf4j.version>
-        <logback.version>1.1.7</logback.version>
-
-
-        <!-- plugins -->
-        <maven-compiler-plugin.version>3.7.0</maven-compiler-plugin.version>
-        <exec-maven-plugin.version>1.6.0</exec-maven-plugin.version>
-        <java.version>1.8</java.version>
-        <log4j.version>1.2.17</log4j.version>
-
-        <lombok.version>1.16.12</lombok.version>
-
-        <junit-platform.version>1.2.0</junit-platform.version>
-        <junit-jupiter.version>5.2.0</junit-jupiter.version>
-
-    </properties>
 
 </project>
