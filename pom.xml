@@ -22,6 +22,7 @@
         <module>pattern</module>
         <module>spring-security-demo</module>
         <module>spring-event-demo</module>
+        <module>spring-circular-dependency</module>
         <module>reactor-java-demo</module>
         <module>apache-camel-demo</module>
     </modules>
