@@ -25,6 +25,7 @@
         <module>spring-circular-dependency</module>
         <module>reactor-java-demo</module>
         <module>apache-camel-demo</module>
+        <module>spring-demo</module>
     </modules>
 
     <properties>
