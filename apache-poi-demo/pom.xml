@@ -12,8 +12,8 @@
     <artifactId>apache-poi-demo</artifactId>
 
     <properties>
-        <poi.version>3.17</poi.version>
-        <jexcel.version>1.0.6</jexcel.version>
+        <poi.version>5.0.0</poi.version>
+        <jexcel.version>1.0.9</jexcel.version>
     </properties>
 
     <dependencies>
@@ -42,7 +42,7 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-core</artifactId>
-            <version>5.1.7.RELEASE</version>
+            <version>5.3.14</version>
         </dependency>
 
     </dependencies>
