@@ -17,7 +17,6 @@
         <module>akka-http</module>
         <module>akka-actor</module>
         <module>apache-poi-demo</module>
-        <module>auto-value-demo</module>
         <module>java-demo</module>
         <module>pattern</module>
         <module>spring-security-demo</module>
@@ -26,6 +25,7 @@
         <module>reactor-java-demo</module>
         <module>apache-camel-demo</module>
         <module>spring-demo</module>
+        <module>java-gc-demo</module>
     </modules>
 
     <properties>

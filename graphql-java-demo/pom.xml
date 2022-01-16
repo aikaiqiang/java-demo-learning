@@ -33,20 +33,20 @@
         <dependency>
             <groupId>com.graphql-java</groupId>
             <artifactId>graphql-java</artifactId>
-            <version>13.0</version>
+            <version>230521-nf-execution</version>
         </dependency>
 
         <dependency>
             <groupId>com.graphql-java</groupId>
             <artifactId>graphql-java-spring-boot-starter-webmvc</artifactId>
-            <version>2019-06-24T11-47-27-31ab4f9</version>
+            <version>2021-10-25T04-50-54-fbc162f</version>
         </dependency>
 
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
             <version>31.0.1-jre</version>
-            <type>bundle</type>
+<!--            <type>compile</type>-->
         </dependency>
     </dependencies>
 
